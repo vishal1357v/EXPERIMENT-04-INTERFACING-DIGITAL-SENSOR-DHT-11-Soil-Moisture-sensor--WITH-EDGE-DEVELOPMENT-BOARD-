@@ -2,10 +2,10 @@
 
 ---
 
-### **NAME:**  
-### **DEPARTMENT:**  
-### **ROLL NO:**  
-### **DATE OF EXPERIMENT:**  
+### **NAME:KANNAN R**  
+### **DEPARTMENT: AI&ML**  
+### **ROLL NO: 212224230306**  
+### **DATE OF EXPERIMENT: 25.02.2026**  
 
 ---
 
@@ -68,7 +68,53 @@ Experiment 4A
 ```
 
 
- 
+ import Adafruit_DHT
+import paho.mqtt.client as mqtt
+import ssl
+import time
+
+# ---------------- DHT11 Setup ----------------
+DHT_SENSOR = Adafruit_DHT.DHT11
+DHT_PIN = 18   # GPIO4
+
+# ---------------- HiveMQ Cloud Credentials ----------------
+MQTT_BROKER = "804bc14ead4b4ebe8f5bbb8d93874976.s1.eu.hivemq.cloud"
+MQTT_PORT = 8883
+MQTT_USER = "hivemq.webclient.1772095046804"
+MQTT_PASSWORD = "0ut3P%f#jSZW,Lk1Y9!a"
+
+TEMP_TOPIC = "raspberrypi/dht/temperature"
+HUM_TOPIC = "raspberrypi/dht/humidity"
+
+# ---------------- MQTT Setup ----------------
+client = mqtt.Client()
+
+client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
+client.tls_set(tls_version=ssl.PROTOCOL_TLS)
+client.connect(MQTT_BROKER, MQTT_PORT)
+
+print("Connected to HiveMQ Cloud")
+print("Reading DHT11 Sensor...\n")
+
+# ---------------- Main Loop ----------------
+while True:
+    humidity, temperature = Adafruit_DHT.read(DHT_SENSOR, DHT_PIN)
+
+    if humidity is not None and temperature is not None:
+        print(f"Temperature = {temperature} °C")
+        print(f"Humidity    = {humidity} %")
+        print("---------------------------")
+
+        # Publish to HiveMQ
+        client.publish(TEMP_TOPIC, temperature)
+        client.publish(HUM_TOPIC, humidity)
+
+        print("Data sent to HiveMQ\n")
+
+    else:
+        print("Sensor failure. Check wiring.")
+
+    time.sleep(10)
 
 
 
@@ -76,18 +122,69 @@ Experiment 4A
 ````
 
 ### OUPUT  
-Experiment 4A
+## Experiment 4A
+<img width="1200" height="1600" alt="image" src="https://github.com/user-attachments/assets/4bae88e5-20dc-420a-8172-d41871c3aec8" />
+<img width="1600" height="1200" alt="image" src="https://github.com/user-attachments/assets/3be02909-9a89-42d2-a8eb-225c61046f7c" />
 
-# FIGURE -04 ADD TITILE HERE 
+<img width="1919" height="910" alt="image" src="https://github.com/user-attachments/assets/76f3c06c-200c-4295-a958-6a28607964db" />
 
-#  FIGURE -05 ADD TITILE HERE 
-
-# FIGURE -06 ADD TITLE HERE 
-
-Experiment 4B
+# Experiment 4B
 ## PROGRAM (Python)
 ```
+import RPi.GPIO as GPIO
+import time
+import paho.mqtt.client as mqtt
+import json
 
+# ---------------- GPIO Setup ----------------
+DIGITAL_PIN = 24   # D0 connected to GPIO 23
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(DIGITAL_PIN, GPIO.IN)
+
+# ---------------- MQTT Setup ----------------
+broker = "804bc14ead4b4ebe8f5bbb8d93874976.s1.eu.hivemq.cloud"
+port = 8883
+topic = "Soil Moisture"
+
+username = "hivemq.webclient.1772180523263"
+password = "3H2y:POu!hja*EG9>r4V"
+
+client = mqtt.Client()
+client.username_pw_set(username, password)
+client.tls_set()  # Required for HiveMQ Cloud (TLS)
+
+client.connect(broker, port)
+client.loop_start()
+
+print("Connected to HiveMQ Cloud")
+
+# ---------------- Main Loop ----------------
+try:
+    while True:
+        digital_value = GPIO.input(DIGITAL_PIN)
+
+        # Convert Digital Value
+        if digital_value == 0:
+            moisture_status = "WET"
+            humidity_value = 100
+        else:
+            moisture_status = "DRY"
+            humidity_value = 0
+
+        payload = {
+            "temperature": humidity_value,  # shown like temperature
+            "humidity": moisture_status     # shown like humidity
+        }
+
+        client.publish(topic, json.dumps(payload))
+        print("Published:", payload)
+
+        time.sleep(2)
+
+except KeyboardInterrupt:
+    GPIO.cleanup()
+    print("Program Stopped")
 
  
 
@@ -97,14 +194,14 @@ Experiment 4B
 ````
 
 ### OUPUT  
-
-# FIGURE -07 ADD TITILE HERE 
-
-#  FIGURE -08 ADD TITILE HERE 
-
-# FIGURE -09 ADD TITLE HERE 
+## Experiment 4B
+<img width="1200" height="1600" alt="image" src="https://github.com/user-attachments/assets/3bcaa78a-b71e-43a0-8eac-882605f268cb" />
 
 
+
+<img width="1600" height="1200" alt="image" src="https://github.com/user-attachments/assets/e7641391-8d97-48e7-ae85-da4fee04c5ae" />
+
+<img width="1910" height="917" alt="image" src="https://github.com/user-attachments/assets/5b0f0d15-783a-45aa-bbac-7a79314968d6" />
 
 
 ## **RESULT:**  
